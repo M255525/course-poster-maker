@@ -1,4 +1,5 @@
 # 端對端測試：python tools/e2e_poster.py [輸出資料夾]（需先開 8890；線上版設 CPM_BASE）
+# 登入序號用 page.route 假造授權回應：FLf9M6zAX8pe／GOOD＝有效、OLD＝過期、FULL＝額滿、其他＝查無（不會碰到真的試算表）
 import os, sys, io, json, zipfile, asyncio
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', line_buffering=True)
 from playwright.async_api import async_playwright
@@ -20,21 +21,64 @@ SCAN = '''async (size) => {
   return r ? r.data : null;
 }''' % JSQR
 
+LIC = 'https://script.google.com/macros/s/AKfycbw2qz-sTKRVkVHGQZLTj73xlJdDiaHG8eNexjAN9XWMrly5BnxVcP8dC0qE3kADHeIl/exec'
+LIC_REQ = []
+async def fake_license(route):
+    try: body = json.loads(route.request.post_data or '{}')
+    except Exception: body = {}
+    LIC_REQ.append(body)
+    sn = body.get('serial', '')
+    if body.get('release'): r = {'ok': True}
+    elif sn in ('FLf9M6zAX8pe', 'GOOD'): r = {'valid': True, 'reason': 'ok', 'activatedAt': '2026-11-16T16:00:00.000Z', 'expiresAt': '2027-05-16T16:00:00.000Z', 'headcountLimit': 10, 'headcountUsed': 1, 'headcountRemaining': 9}
+    elif sn == 'OLD': r = {'valid': False, 'reason': 'expired', 'expiresAt': '2026-01-01T16:00:00.000Z'}
+    elif sn == 'FULL': r = {'valid': False, 'reason': 'headcount_exceeded', 'message': '已達上限', 'headcountLimit': 10, 'headcountUsed': 10, 'headcountRemaining': 0}
+    else: r = {'valid': False, 'reason': 'serial_not_found'}
+    await route.fulfill(status=200, content_type='application/json', body=json.dumps(r))
+
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch()
         ctx = await b.new_context(viewport={'width': 1400, 'height': 950}, accept_downloads=True)
+        await ctx.route(LIC + '*', fake_license)
         pg = await ctx.new_page()
         errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)))
         pg.on('console', lambda m: errs.append(m.text) if m.type == 'error' and 'visitor-badge' not in m.text and 'script.google' not in m.text else None)
         await pg.goto(BASE)
         await pg.wait_for_function('window._cpm')
+
+        # 登入序號閘門
+        check(await pg.is_visible('#entryGate') and not await pg.evaluate('window._cpm.gateOpen'), '沒登入：閘門擋住整個工具')
+        check(not await pg.is_visible('#modal.show'), '沒登入時不先跳警語')
+        check(await pg.text_content('#gateFreeCode') == 'FLf9M6zAX8pe', '登入頁顯示免費試用序號')
+        check(await pg.get_attribute('#entryGateSerial', 'type') == 'password', '序號輸入框預設遮住')
+        await pg.click('#btnEntryGateConfirm')
+        check('請輸入登入序號' in await pg.text_content('#entryGateStatus'), '空白序號：提示要輸入')
+        await pg.fill('#entryGateSerial', 'WRONG')
+        await pg.click('#btnEntryGateConfirm')
+        await pg.wait_for_function('document.getElementById("entryGateStatus").textContent.includes("查無")')
+        check(await pg.is_visible('#entryGate'), '錯的序號：顯示查無、仍擋住')
+        check(LIC_REQ and LIC_REQ[-1].get('sheet') == '課程招生海報產生器', '驗證請求帶分頁「課程招生海報產生器」')
+        await pg.fill('#entryGateSerial', 'OLD'); await pg.click('#btnEntryGateConfirm')
+        await pg.wait_for_function('document.getElementById("entryGateStatus").textContent.includes("過期")')
+        check(await pg.is_visible('#entryGate'), '過期序號：擋住')
+        await pg.fill('#entryGateSerial', 'FULL'); await pg.click('#btnEntryGateConfirm')
+        await pg.wait_for_function('document.getElementById("entryGateHeadcount").textContent.includes("上限")')
+        check(await pg.is_visible('#entryGate'), '額滿：顯示人數上限、擋住')
+        await pg.click('#btnGateFreeCopy')
+        try: await pg.wait_for_function('document.getElementById("btnGateFreeCopy").textContent.includes("已複製")', timeout=3000)
+        except Exception: pass
+        check('已複製' in await pg.text_content('#btnGateFreeCopy'), '複製免費序號按鈕有回饋')
+        await pg.click('#btnGateFree')
+        await pg.wait_for_function('window._cpm.gateOpen')
+        check(not await pg.is_visible('#entryGate') and await pg.evaluate('localStorage.getItem("cpmEntrySerial")') == 'FLf9M6zAX8pe', '用免費序號登入：解鎖並記住序號')
+        lt = await pg.text_content('#licTop')
+        check(await pg.is_visible('#licTop') and '2027/5/17' in lt, '上方顯示序號到期日：' + lt)
         check(await pg.is_visible('#modal.show') and '使用警語' in await pg.text_content('#modalBox'), '首訪跳出使用警語')
         await pg.click('#modal [data-act=close]')
         check(await pg.evaluate('window._cpm.S.course.title') == 'AI 辦公室應用實務班', '第一次打開先放範例一')
         await pg.evaluate('window._cpm.redraw()')
-        check(await pg.is_visible('a[href="manual.html"]') and await pg.is_visible('.foot a[href="manual.html#creator"]') and await pg.is_visible('.foot [data-act=install]') and await pg.locator('.foot img[src*="coursepostermaker"]').count() == 1, '頁面有操作手冊、創作者資訊、加入主畫面、訪客計數器')
+        check(await pg.is_visible('.top a[href="manual.html"]') and await pg.is_visible('.foot a[href="manual.html#creator"]') and await pg.is_visible('.foot [data-act=install]') and await pg.locator('.foot img[src*="coursepostermaker"]').count() == 1, '頁面有操作手冊、創作者資訊、加入主畫面、訪客計數器')
         check(await pg.is_visible('.warn-line [data-act=warn]'), '頁面上看得到使用警語入口')
         check(await pg.locator('canvas[data-thumb]').count() == 6, '6 個版型縮圖')
         sizes = await pg.evaluate('[...document.querySelectorAll("canvas[data-thumb]")].map(c=>c.width>0)')
@@ -155,14 +199,15 @@ async def main():
         share = await pg.evaluate('window._cpm.shareUrl()')
         pg2 = await ctx.new_page()
         await pg2.goto(share)
-        await pg2.wait_for_function('window._cpm')
+        await pg2.wait_for_function('window._cpm && window._cpm.gateOpen')
         await pg2.wait_for_timeout(300)
         check(await pg2.evaluate('window._cpm.S.course.title') == 'AI 讓你準時下班' and '#p=' not in pg2.url, '分享連結在新分頁還原，網址列清掉 #p=')
         await pg2.close()
 
         # 從訓練證書帶入
         await pg.evaluate('''localStorage.setItem("tcg.state", JSON.stringify({unit:{name:"證書協會",tel:"(02)1111-2222",logo:""},course:{name:"證書課程班",start:"2027-02-06",end:"2027-03-06",hours:"18",place:"證書教室"}}))''')
-        await pg.reload(); await pg.wait_for_function('window._cpm')
+        await pg.reload(); await pg.wait_for_function('window._cpm && window._cpm.gateOpen')
+        check(not await pg.is_visible('#modal.show'), '重新整理：自動登入、警語不再跳')
         await pg.click('[data-card=ex] summary') if not await pg.is_visible('[data-act=cert]') else None
         check(await pg.is_visible('[data-act=cert]'), '有訓練證書資料時出現帶入按鈕')
         await pg.click('[data-act=cert]')
@@ -187,21 +232,47 @@ async def main():
         check(got is not None, '放了 Logo 和照片 QR 仍掃得到')
 
         # ⚙ 常用設定收合
-        await pg.click('.top [data-act=settings]')
+        await pg.click('.top [data-act=settings][aria-label]')
         secs = await pg.evaluate('[...document.querySelectorAll(".set-sec")].map(d=>d.dataset.sec)')
-        check(secs == ['view', 'ai', 'tpl', 'wipe', 'about'], '常用設定收合區塊 ' + str(secs))
+        check(secs == ['lic', 'view', 'ai', 'tpl', 'wipe', 'about'], '常用設定收合區塊 ' + str(secs))
+        await pg.click('#modal [data-act=close]')
+        await pg.click('#licTop')
+        await pg.wait_for_timeout(200)
+        check(await pg.locator('.set-sec[data-sec=lic]').count() == 1 and '2027/5/17' in await pg.text_content('.set-sec[data-sec=lic] summary'), '點到期日開 ⚙，登入序號區顯示到期日')
         await pg.click('#modal [data-act=close]')
 
         # 375px
         m = await ctx.new_page()
         await m.set_viewport_size({'width': 375, 'height': 800})
-        await m.goto(BASE); await m.wait_for_function('window._cpm'); await m.evaluate('window._cpm.redraw()')
+        await m.goto(BASE); await m.wait_for_function('window._cpm && window._cpm.gateOpen'); await m.evaluate('window._cpm.redraw()')
         ow = await m.evaluate('document.documentElement.scrollWidth')
         check(ow <= 376, '375px 手機沒有橫向捲動（%d）' % ow)
         await m.screenshot(path=os.path.join(OUT, 'mobile.png'))
         await m.close()
 
         await pg.screenshot(path=os.path.join(OUT, 'desktop.png'))
+
+        # 清除全部資料不會登出；登出要重新輸入
+        await pg.evaluate('window._cpm.ACT.wipeOk()')
+        check(await pg.evaluate('window._cpm.gateOpen') and await pg.evaluate('localStorage.getItem("cpmEntrySerial")') == 'FLf9M6zAX8pe', '清除全部資料不會登出')
+        await pg.click('.top [data-act=settings][aria-label]')
+        await pg.click('.set-sec[data-sec=lic] summary')
+        await pg.click('[data-act=logout]')
+        check(await pg.is_visible('#entryGate') and not await pg.evaluate('window._cpm.gateOpen') and await pg.evaluate('localStorage.getItem("cpmEntrySerial")') is None, '登出：回到閘門、序號清掉')
+        check(any(r.get('release') and r.get('sheet') == '課程招生海報產生器' for r in LIC_REQ), '登出時送出釋出名額（帶分頁）')
+        await pg.fill('#entryGateSerial', 'GOOD'); await pg.press('#entryGateSerial', 'Enter')
+        await pg.wait_for_function('window._cpm.gateOpen')
+        check(not await pg.is_visible('#entryGate'), '輸入序號按 Enter 也能登入')
+        gm = await ctx.new_page()
+        await gm.set_viewport_size({'width': 375, 'height': 800})
+        await gm.evaluate('0')
+        await gm.goto(BASE); await gm.wait_for_function('window._cpm')
+        await gm.evaluate('localStorage.removeItem("cpmEntrySerial")'); await gm.reload(); await gm.wait_for_function('window._cpm')
+        await gm.wait_for_timeout(300)
+        gw = await gm.evaluate('document.documentElement.scrollWidth')
+        check(await gm.is_visible('#entryGate') and gw <= 376, '375px 登入頁正常、無橫捲（%d）' % gw)
+        await gm.screenshot(path=os.path.join(OUT, 'gate_mobile.png'))
+        await gm.close()
         check(not errs, '沒有 console 錯誤 ' + str(errs[:3]))
         await b.close()
     print('\n%s %d 項失敗' % ('✗' if fails else '✓', len(fails)))

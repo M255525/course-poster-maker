@@ -206,7 +206,7 @@ function renderBar(){
 function render(){
   $('app').innerHTML = '<div class="top"><h1><span class="reg" aria-hidden="true"></span><span>課程招生海報產生器 <small>A4 海報・IG／FB／LINE 社群圖・報名 QR</small></span></h1>' +
     '<span class="cmyk" aria-hidden="true"><i style="background:var(--cy)"></i><i style="background:var(--mg)"></i><i style="background:var(--ye)"></i><i style="background:var(--k);box-shadow:0 0 0 1px #fff"></i></span>' +
-    '<a class="ibtn" href="manual.html">📖 操作手冊</a><button class="ibtn" type="button" data-act="settings" aria-label="常用設定">⚙</button></div>' +
+    '<button class="ibtn lictop" type="button" id="licTop" data-act="settings" hidden></button><a class="ibtn" href="manual.html">📖 操作手冊</a><button class="ibtn" type="button" data-act="settings" aria-label="常用設定">⚙</button></div>' +
     '<p class="warn-line">補助比例、名額、日期請照實填寫；資料只存在這台瀏覽器。<button type="button" data-act="warn">⚠ 使用警語</button></p>' +
     '<div class="work"><div class="panel" id="panel"></div>' +
     '<div class="pv"><div class="bar" id="bar"></div>' +
@@ -215,7 +215,7 @@ function render(){
       '<button type="button" class="btn mg" data-act="png">⬇ 下載 PNG</button><button type="button" class="btn cy" data-act="zip">📦 全部尺寸 ZIP</button>' +
       '<button type="button" class="btn" data-act="printA4">🖨 列印 A4 海報</button><button type="button" class="btn" data-act="printA6">🖨 A6 傳單（一張印 4 份）</button>' +
       '<button type="button" class="btn alt" data-act="post">📋 複製貼文文案</button><button type="button" class="btn alt" data-act="share">🔗 分享連結</button></div></div></div></div>' + footer();
-  renderPanel(); renderBar(); redraw();
+  renderPanel(); renderBar(); redraw(); showLicTop();
 }
 function footer(){
   return '<footer class="foot">👤 創作者 Mark Tsai（蔡豐全）<a href="mailto:tsaimark@gmail.com">tsaimark@gmail.com</a><br><a href="manual.html">📖 操作手冊</a><a href="manual.html#creator">👤 創作者資訊</a><a href="#" data-act="warn">⚠ 使用警語</a>' +
@@ -306,10 +306,11 @@ function aiSettings(){
 function openSettings(openId){
   var xl = lsGet('fs') === 'xl';
   var h = '<div class="top"><h2 style="flex:1 1 0">⚙ 常用設定</h2><button type="button" class="btn alt sm" data-act="foldall">全部展開／收合</button></div>' +
+    sec('lic', '🔑 登入序號', gateOpen ? (gateExp(LICINFO) ? '到期日 ' + expText(gateExp(LICINFO)) : '已登入') : '', '<span id="licBadge" class="lic ' + gateInfo.cls + '">' + esc(gateInfo.text) + '</span><div><span id="headcountBadge" class="lic ' + gateInfo.hcls + '">' + esc(gateInfo.head) + '</span></div><div class="stack"><button type="button" class="btn alt" data-act="logout">登出</button></div><p class="small">登出後這台電腦要重新輸入序號；海報內容、範本、AI 設定不會刪掉。</p>') +
     sec('view', '顯示', xl ? '大字' : '標準字', '<div class="stack"><button type="button" class="btn' + (xl ? ' alt' : '') + '" data-fontsize="m">標準字</button><button type="button" class="btn' + (xl ? '' : ' alt') + '" data-fontsize="xl">大字</button></div><p class="small">只影響操作畫面，不影響海報。</p>') +
     sec('ai', '🤖 AI 設定', AI.status(), aiSettings()) +
     sec('tpl', '我的範本', TPLS.length + ' 個', '<p class="small">在「例 範例與我的範本」存檔和套用。</p>' + (TPLS.length ? '<div class="stack"><button type="button" class="btn red sm" data-act="wipeTpl">刪除全部範本</button></div>' : '')) +
-    sec('wipe', '🧹 清除全部資料', '', '<p class="small">清掉海報內容、Logo、講師照片、範本與 AI 金鑰。</p><div class="stack"><button type="button" class="btn red" data-act="wipeAll">清除全部資料</button></div>') +
+    sec('wipe', '🧹 清除全部資料', '', '<p class="small">清掉海報內容、Logo、講師照片、範本與 AI 金鑰（登入序號不會清掉，要登出請到上方「登入序號」）。</p><div class="stack"><button type="button" class="btn red" data-act="wipeAll">清除全部資料</button></div>') +
     sec('about', '關於本工具', '', '<p>👤 創作者 Mark Tsai（蔡豐全）<br><a href="mailto:tsaimark@gmail.com">tsaimark@gmail.com</a></p><div class="stack"><a class="btn alt" href="manual.html">📖 操作手冊</a><a class="btn alt" href="manual.html#creator">👤 創作者資訊</a><button type="button" class="btn alt" data-act="warn">⚠ 使用警語</button>' +
       (standalone ? '' : '<button type="button" class="btn alt" data-act="install">📲 加入主畫面</button>') + '</div><p class="small" style="margin-top:.5rem">訪客數 <img src="https://visitor-badge.laobi.icu/badge?page_id=m255525.coursepostermaker" alt="訪客次數" height="20" loading="lazy" style="vertical-align:middle"></p>') +
     '<div class="stack"><button type="button" class="btn" data-act="close">關閉</button></div>';
@@ -327,6 +328,7 @@ function install(){
 
 var ACT = {
   close:closeModal, warn:showWarn, settings:openSettings, install:install,
+  logout:function(){ closeModal(); gateLogout(); },
   foldall:function(){ var ds = document.querySelectorAll('.set-sec'), any = Array.prototype.some.call(ds, function(d){ return !d.open; }); ds.forEach(function(d){ d.open = any; }); saveFold(); },
   'new':function(){ var st = P.blank(); st.look = S.look; st.size = S.size; apply(st, true); toast('已開新海報，主辦單位與版型保留'); },
   cert:fromCert,
@@ -418,9 +420,144 @@ function checkHash(){
 }
 window.addEventListener('hashchange', checkHash);
 
+/* ---------- 登入序號閘門（2026-11-17，複製自訓練證書產生器） ----------
+   序號在試算表「辦訓相關」的分頁「課程招生海報產生器」，和訓練證書產生器共用同一支 Apps Script（請求帶 sheet 指定分頁）。
+   開啟時 fail-closed：驗證沒通過就整個工具都不能用。已登入後的背景重驗只有連線失敗或 server_error 不上鎖（正在排版不要被打斷），
+   序號過期、查無序號才上鎖。序號存 cpmEntrySerial（刻意不用 cpm. 前綴，⚙ 清除資料不會登出）。 */
+var LICENSE_CHECK_URL = 'https://script.google.com/macros/s/AKfycbw2qz-sTKRVkVHGQZLTj73xlJdDiaHG8eNexjAN9XWMrly5BnxVcP8dC0qE3kADHeIl/exec';
+var LICENSE_SHEET = '課程招生海報產生器';
+var SERIAL_KEY = 'cpmEntrySerial', CLIENT_KEY = 'cpmEntryClientId', RECHECK_MS = 20 * 60 * 1000;
+// 公開在登入頁的免費試用序號（使用者 2026-11-17 指定，和訓練證書產生器同一組；試算表那一列：到 2027/5/17、人數上限 10）。停用時改成 '' 就不顯示。
+var FREE_SERIAL = 'FLf9M6zAX8pe';
+function rawGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function rawSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+function rawDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+var gateOpen = false, LICINFO = null;
+var gateInfo = {cls:'', text:'尚未驗證', hcls:'', head:''};
+var REASON_LABEL = {
+  missing_serial:'請輸入登入序號',
+  serial_not_found:'查無此序號，請確認有沒有打錯',
+  expired:'這組序號已經過期了',
+  network_error:'連不上網路，請確認網路後再按一次確認',
+  server_error:'驗證暫時失敗，請等一下再試'
+};
+function clientId(){
+  var id = rawGet(CLIENT_KEY);
+  if(!id){ id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'c-' + Date.now() + '-' + Math.random().toString(36).slice(2); rawSet(CLIENT_KEY, id); }
+  return id;
+}
+function gateStatus(cls, text){
+  gateInfo.cls = cls; gateInfo.text = text;
+  var e = $('entryGateStatus'); e.className = 'lic ' + cls; e.textContent = text;
+  var b = $('licBadge'); if(b){ b.className = 'lic ' + cls; b.textContent = text; }
+}
+function gateHead(l){
+  var limited = l && typeof l.headcountLimit === 'number', free = l && l.valid && !limited, left = limited ? Math.max(l.headcountRemaining || 0, 0) : 0;
+  gateInfo.head = !l ? '' : free ? '此序號不限登入人數' : limited ? '此序號還可登入 ' + left + ' 人（上限 ' + l.headcountLimit + ' 人）' : '';
+  gateInfo.hcls = free || left > 0 ? 'ok' : 'bad';
+  var g = $('entryGateHeadcount'); g.textContent = l && l.reason === 'headcount_exceeded' ? gateInfo.head : '';
+  var b = $('headcountBadge'); if(b){ b.className = 'lic ' + gateInfo.hcls; b.textContent = gateInfo.head; }
+}
+function checkLicense(serial, attempt, renew){
+  attempt = attempt || 1;
+  if(!LICENSE_CHECK_URL) return Promise.reject(new Error('尚未設定授權伺服器'));
+  var ctl = window.AbortController ? new AbortController() : null, tm = ctl && setTimeout(function(){ ctl.abort(); }, 20000);
+  // Apps Script 不回應 OPTIONS 預檢，所以不設 Content-Type
+  return fetch(LICENSE_CHECK_URL, {method:'POST', body:JSON.stringify({serial:serial, sheet:LICENSE_SHEET, clientId:clientId(), renew:!!renew}), signal:ctl ? ctl.signal : undefined}).catch(function(){
+    throw new Error(REASON_LABEL.network_error);
+  }).then(function(r){
+    clearTimeout(tm);
+    if(!r.ok) throw new Error(REASON_LABEL.server_error);
+    return r.text();
+  }).then(function(t){
+    var d; try{ d = JSON.parse(t); }catch(e){ d = null; }
+    if(!d || typeof d.valid !== 'boolean'){
+      if(attempt < 3) return checkLicense(serial, attempt + 1, renew);
+      throw new Error(REASON_LABEL.server_error);
+    }
+    return d;
+  });
+}
+// 到期日：後端回傳結束日期當天 00:00（台北）的 ISO，當天結束前都有效。用瀏覽器本地日期顯示、算剩幾天。
+function gateExp(l){
+  if(!l || !l.expiresAt) return null;
+  var e = new Date(l.expiresAt); if(isNaN(e)) return null;
+  var end = new Date(e.getFullYear(), e.getMonth(), e.getDate()), t = new Date(Date.now()), today = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  return {y:end.getFullYear(), m:end.getMonth() + 1, d:end.getDate(), left:Math.max(Math.round((end - today) / 86400000), 0)};
+}
+function expText(x){ return x.y + '/' + x.m + '/' + x.d; }
+function gateDays(l){
+  var x = gateExp(l); if(!x) return '序號有效';
+  return '序號有效，可以用到 ' + expText(x) + '（還有 ' + x.left + ' 天）';
+}
+function showLicTop(){
+  var el = $('licTop'); if(!el) return;
+  var x = gateExp(LICINFO);
+  el.hidden = !gateOpen || !LICINFO;
+  if(el.hidden) return;
+  el.className = 'ibtn lictop' + (x && x.left <= 14 ? ' soon' : '');
+  el.innerHTML = x ? '🔑 序號到期日 <b>' + expText(x) + '</b><small>（還有 ' + x.left + ' 天）</small>' : '🔑 序號有效';
+  el.title = '登入序號的使用期限' + (typeof LICINFO.headcountLimit === 'number' ? '；此序號同時最多 ' + LICINFO.headcountLimit + ' 人登入' : '') + '。點一下看詳細';
+}
+function gateUnlock(l){
+  LICINFO = l; gateStatus('ok', '✓ ' + gateDays(l)); gateHead(l);
+  $('entryGate').classList.add('hidden');
+  var first = !gateOpen; gateOpen = true; showLicTop();
+  if(first){
+    redraw(); // 閘門擋著時畫的預覽可能還沒拿到字型，解鎖後重畫一次
+    if(!lsGet('warnSeen')){ showWarn(); lsSet('warnSeen', '1'); } // 首訪警語改在第一次解鎖後才跳
+  }
+}
+function gateLock(text, l){
+  gateOpen = false; LICINFO = null; showLicTop();
+  gateStatus('bad', '✗ ' + text); gateHead(l && l.reason === 'headcount_exceeded' ? l : null);
+  closeModal(); $('entryGate').classList.remove('hidden');
+}
+function gateRun(serial, renew){
+  if(!serial){ gateLock(REASON_LABEL.missing_serial); return Promise.resolve(); }
+  return checkLicense(serial, 1, renew).then(function(l){
+    if(l.valid) gateUnlock(l);
+    else if(l.reason === 'server_error' && gateOpen) return;
+    else gateLock(REASON_LABEL[l.reason] || l.message || '序號驗證失敗', l);
+  }).catch(function(e){ if(!gateOpen) gateLock(e.message); });
+}
+function gateRenew(){ var s = rawGet(SERIAL_KEY); if(s && gateOpen) gateRun(s, true); }
+function gateRelease(serial){
+  if(!serial || !navigator.sendBeacon || !LICENSE_CHECK_URL) return;
+  try{ navigator.sendBeacon(LICENSE_CHECK_URL, new Blob([JSON.stringify({serial:serial, sheet:LICENSE_SHEET, clientId:clientId(), release:true})], {type:'text/plain'})); }catch(e){}
+}
+function gateLogout(){
+  gateRelease(rawGet(SERIAL_KEY)); rawDel(SERIAL_KEY);
+  $('entryGateSerial').value = ''; gateLock('已登出，請輸入登入序號');
+}
+function initGate(){
+  var input = $('entryGateSerial'), btn = $('btnEntryGateConfirm');
+  btn.onclick = function(){ var s = input.value.trim(); rawSet(SERIAL_KEY, s); gateStatus('', '驗證中…'); gateRun(s, false); };
+  input.addEventListener('keydown', function(e){ if(e.key === 'Enter') btn.click(); });
+  if(FREE_SERIAL){
+    $('gateFreeCode').textContent = FREE_SERIAL;
+    $('btnGateFree').onclick = function(){ input.value = FREE_SERIAL; btn.click(); };
+    $('btnGateFreeCopy').onclick = function(){
+      var b = $('btnGateFreeCopy'), done = function(){ b.textContent = '已複製 ✓'; setTimeout(function(){ b.textContent = '複製序號'; }, 2000); }; // toast 會被閘門蓋住，所以改按鈕文字
+      var fb = function(){ var t = document.createElement('textarea'); t.value = FREE_SERIAL; document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); }catch(e){} t.remove(); done(); };
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(FREE_SERIAL).then(done, fb); else fb();
+    };
+  } else $('gateFree').hidden = true;
+  function maskSerial(hide){ // 預設隱藏，免得旁人看到；要核對時才按顯示
+    var t = $('btnEntryGateToggle');
+    input.type = hide ? 'password' : 'text';
+    t.textContent = hide ? '👁 顯示' : '🙈 隱藏'; t.setAttribute('aria-pressed', String(!hide)); t.setAttribute('aria-label', hide ? '顯示序號' : '隱藏序號');
+  }
+  $('btnEntryGateToggle').onclick = function(){ maskSerial(input.type === 'text'); };
+  btn.addEventListener('click', function(){ maskSerial(true); });
+  input.value = rawGet(SERIAL_KEY) || '';
+  if(input.value){ gateStatus('', '驗證中…'); gateRun(input.value, false); }
+  setInterval(gateRenew, RECHECK_MS);
+  window.addEventListener('pagehide', function(){ gateRelease(rawGet(SERIAL_KEY)); }); // 送不出去也沒關係，後端 40 分鐘逾時兜底
+}
+
 applyView();
 if(firstRun && !location.hash){ var e0 = P.clone(P.EXAMPLES[0].st); S = merge(e0); save(); }
-render(); initMarquee(); checkHash();
-if(!lsGet('warnSeen')){ showWarn(); lsSet('warnSeen', '1'); }
-window._cpm = {get S(){ return S; }, redraw:redraw, fullCanvas:fullCanvas, preparePrint:preparePrint, loadExample:loadExample, zipAll:zipAll, get LAST(){ return LAST; }, shareUrl:shareUrl, setPath:function(p, v){ setPath(p, v); save(); return redraw(); }, ACT:ACT};
+render(); initMarquee(); checkHash(); initGate();
+window._cpm = {get gateOpen(){ return gateOpen; }, get S(){ return S; }, redraw:redraw, fullCanvas:fullCanvas, preparePrint:preparePrint, loadExample:loadExample, zipAll:zipAll, get LAST(){ return LAST; }, shareUrl:shareUrl, setPath:function(p, v){ setPath(p, v); save(); return redraw(); }, ACT:ACT};
 })();
