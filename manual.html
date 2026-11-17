@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>課程招生海報產生器・操作手冊</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1F2544;--sub:#5D6385;--bg:#EEF1F4;--paper:#FFFDF7;--line:#E3D8C2;--navy:#244A3E;--gold:#F2B134;--red:#C8372D;--blue:#0B6E99}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;font-weight:500;font-size:17px;line-height:1.75}
+main{max-width:800px;margin:0 auto;padding:20px 16px 48px}
+h1,h2{font-family:'Noto Sans TC',sans-serif;font-weight:900;line-height:1.35}
+h1{font-size:30px;margin:0 0 6px;color:var(--navy)}
+h2{font-size:22px;margin:4px 0 8px;color:var(--navy)}
+section{background:var(--paper);border-radius:14px;box-shadow:0 0 0 1.5px var(--line),0 4px 0 var(--line);padding:12px 18px 14px;margin-top:14px}
+a{color:var(--blue);font-weight:700}
+li{margin:5px 0}
+ol,ul{padding-left:1.3em}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:540px}
+th,td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+th{background:var(--bg)}
+.red{color:var(--red);font-weight:900}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e11d2e;margin-right:3px}
+@media print{body{background:#fff}section{break-inside:avoid;box-shadow:0 0 0 1px #888}}
+</style>
+<body>
+<main>
+<h1>🖨 課程招生海報產生器・操作手冊</h1>
+<p><a href="index.html">← 回到產生器</a></p>
+
+<section>
+<h2>這是什麼</h2>
+<p>給<b>辦訓單位、講師、社區大學、協會</b>用的招生海報產生器。填一次課程資料，就會自動排出 <b>A4 列印海報</b>和 <b>IG、FB、LINE 社群圖</b>，報名網址會自動變成 <b>QR code</b>。換尺寸、換版型時，文字會自動重新排版、自動縮字，不用自己拉框。</p>
+<p>不用註冊、不用安裝；資料和圖片只存在你的瀏覽器，不會上傳。</p>
+</section>
+
+<section>
+<h2>三步驟做好一張海報</h2>
+<ol>
+<li><b>填資料</b>：左邊依序填「主辦單位」「課程名稱與標語」「時間地點」「費用與名額」「課程亮點」「講師」「報名方式」。沒填的項目不會出現在海報上。</li>
+<li><b>選樣子</b>：右邊上方選<b>尺寸</b>、<b>版型</b>（6 種縮圖是用你的內容即時畫出來的）、<b>配色</b>和<b>字型</b>。</li>
+<li><b>輸出</b>：按「⬇ 下載 PNG」存目前尺寸；「📦 全部尺寸 ZIP」一次打包 6 種尺寸＋貼文文案；「🖨 列印 A4 海報」或「🖨 A6 傳單」直接印或存 PDF。</li>
+</ol>
+<p>第一次打開會先放一個範例。左上「例 範例與我的範本」有 4 個範例可以點來看（內容全部虛構）。</p>
+</section>
+
+<section>
+<h2>6 種尺寸</h2>
+<div class="tw"><table>
+<tr><th>尺寸</th><th>像素</th><th>適合用在</th></tr>
+<tr><td>A4 直式</td><td>2480×3508（300dpi）</td><td>列印張貼、存 PDF；只有這個尺寸會印出「課程大綱」</td></tr>
+<tr><td>IG 貼文 4:5</td><td>1080×1350</td><td>IG、FB 動態貼文（直式最佔版面）</td></tr>
+<tr><td>方形 1:1</td><td>1080×1080</td><td>IG、FB 貼文；亮點只放前 3 條</td></tr>
+<tr><td>限時動態</td><td>1080×1920</td><td>IG、FB 限動；上下自動留白，不會被頭像和回覆框蓋住</td></tr>
+<tr><td>橫式封面</td><td>1200×630</td><td>FB 連結預覽、活動封面；只放標題、日期、地點、費用和 QR</td></tr>
+<tr><td>LINE 圖片</td><td>1040×1040</td><td>LINE 官方帳號群發圖片</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>6 種版型</h2>
+<ul>
+<li><b>簡潔商務</b>：上方細色帶，資訊清楚，適合正式課程。</li>
+<li><b>活力色塊</b>：斜切大色塊＋圓點，適合社群貼文。</li>
+<li><b>講師主打</b>：講師照片放大，適合名師講座。沒上傳照片時會放姓名第一個字。</li>
+<li><b>補助優惠</b>：「自付 1,600 元」大大的，適合產業人才投資方案等補助課程。</li>
+<li><b>清單資訊</b>：資訊做成表格條紋，內容多時最好讀。</li>
+<li><b>手寫筆記</b>：筆記紙＋紙膠帶＋便利貼亮點，適合手作、生活類課程（預設用楷書）。</li>
+</ul>
+<p>配色有 6 組，也可以用「自訂主色」挑你們單位的代表色；顏色太淺時會自動加深，白字才看得清楚。</p>
+</section>
+
+<section>
+<h2>文字太多怎麼辦</h2>
+<p>每一塊都會自動縮字到放得下為止。如果縮到最小還是放不下，預覽上會出現<span class="red">紅色虛線框</span>，下方也會提醒是哪一塊。這時請刪減文字，或改用 A4、IG 貼文等比較大的尺寸。紅框只出現在預覽，下載的圖片不會有。</p>
+</section>
+
+<section>
+<h2>費用與補助怎麼填</h2>
+<ul>
+<li>免費課程在「費用」填<b>免費</b>。</li>
+<li>補助課程：「費用」填原價（例如 8000）、「補助後」填自付金額（例如 1600）、「費用說明」填計畫公告的寫法（例如「結訓補助 80%」）。海報會自動加註「補助資格與金額依計畫規定」。</li>
+<li>早鳥價：「補助後／優惠價」填早鳥價，「費用說明」寫「早鳥價 12/10 前」。</li>
+</ul>
+<p class="red">補助比例、資格請以計畫最新公告為準，不要寫成「保證補助」。</p>
+</section>
+
+<section>
+<h2>QR code 與報名網址</h2>
+<p>在「報名方式」填網址（Google 表單、報名系統、LINE 加好友連結都可以），海報右下角就會出現 QR code。A4 版 QR 至少 3 公分，社群圖至少 220 像素。<b>印刷或發布前，請用手機實際掃一次。</b></p>
+<p>QR code 由 cdnjs 的 qrcodejs 元件產生，第一次使用需要網路。</p>
+</section>
+
+<section>
+<h2>列印</h2>
+<ul>
+<li><b>🖨 列印 A4 海報</b>：一張 A4。印表機設定請選「實際大小／100%」，邊界選「無」。</li>
+<li><b>🖨 A6 傳單</b>：一張 A4 印 4 份，沿著虛線剪開就是 A6 傳單（105×148 mm）。</li>
+<li>想存成 PDF：列印視窗的「目的地」選「另存為 PDF」。</li>
+<li>大部分家用印表機印不到紙張最邊緣，邊邊可能會留一點白，這是印表機限制。</li>
+</ul>
+</section>
+
+<section>
+<h2>其他功能</h2>
+<ul>
+<li><b>💡 給我標題建議</b>：依課程名稱和時數，給幾個招生標題範本，點一下就換上去。</li>
+<li><b>常用亮點</b>：亮點欄下方的小按鈕，點了直接加一條。</li>
+<li><b>📋 複製貼文文案</b>：把標題、日期、地點、費用、亮點、報名連結、hashtag 整理成一篇貼文，貼到 FB、IG、LINE。</li>
+<li><b>🔗 分享連結</b>：把文字和版型編進網址，傳給同事就能打開同一張海報繼續改（Logo、講師照片不會帶過去）。</li>
+<li><b>💾 我的範本</b>：把主辦單位、Logo、配色存起來，下一門課直接套用；最多 20 個。</li>
+<li><b>🆕 新海報</b>：清空課程內容，保留主辦單位與版型。</li>
+<li><b>🎓 從訓練證書產生器帶入</b>：如果你在同一個瀏覽器用過<a href="https://m255525.github.io/training-certificate-generator/">訓練證書產生器</a>，會出現這個按鈕，可以把單位名稱、Logo、課程名稱、日期、時數帶進來。</li>
+</ul>
+</section>
+
+<section>
+<h2>✨ AI 幫我寫文案（選用）</h2>
+<p>AI 只寫<b>標題、副標、亮點、適合對象、hashtag</b>；日期、費用、補助比例、名額照你填的，不讓 AI 改。</p>
+<ul>
+<li><b>沒有金鑰</b>：按「📋 複製提示詞」，貼到 ChatGPT、Gemini 或 Claude，再把它回的 JSON 用「📥 貼上 AI 回覆」貼回來。</li>
+<li><b>有金鑰</b>：到 ⚙ 常用設定的「🤖 AI 設定」選服務、貼金鑰，再按「✨ AI 幫我寫」。支援 Gemini、OpenAI、Claude、OpenRouter、xAI、DeepSeek 與 OpenAI 相容的自訂端點。金鑰只存在這台瀏覽器。</li>
+</ul>
+<p>結果可以「全部套用」或只套用標題、只套用亮點。AI 寫的內容請自己再看一次。</p>
+</section>
+
+<section>
+<h2>⚙ 常用設定</h2>
+<ul>
+<li><b>顯示</b>：操作畫面切換標準字或大字（不影響海報）。</li>
+<li><b>🤖 AI 設定</b>：服務商、金鑰、模型。</li>
+<li><b>我的範本</b>：刪除全部範本。</li>
+<li><b>🧹 清除全部資料</b>：公用電腦用完請清除。</li>
+<li><b>關於本工具</b>：操作手冊、創作者資訊、使用警語、加入主畫面、訪客數。</li>
+</ul>
+</section>
+
+<section>
+<h2>⚠ 使用警語</h2>
+<ul>
+<li>海報上的課程、日期、費用、補助比例與資格、名額都由使用者填寫並自行負責；政府補助課程請照計畫公告填寫。</li>
+<li>Logo、講師照片請用有權使用的圖片；放別人的照片要先取得本人同意。不得冒用政府機關、學校或其他單位的名稱與標誌。</li>
+<li>QR code 會連到你填的網址，印刷或發布前請用手機實際掃一次。</li>
+<li>資料只存在這台瀏覽器；使用 AI 時，課程文字會送到你選的 AI 服務。</li>
+<li>內建字型（思源黑體 Noto Sans TC、粉圓 Huninn、霞鶩文楷 LXGW WenKai TC）都是 SIL 開源字型，可商用；範例中的單位、講師、網址全部虛構。</li>
+</ul>
+</section>
+
+<section id="creator">
+<h2>👤 關於創作者</h2>
+<div class="mk-creator">
+<style>.mk-creator{line-height:1.75}.mk-creator h3{margin:14px 0 6px;font-size:1.05em}.mk-creator table{width:100%;border-collapse:collapse;font-size:.95em}.mk-creator td,.mk-creator th{text-align:left;padding:5px 6px;border-bottom:1px solid rgba(128,128,128,.3);vertical-align:top}.mk-creator th{white-space:nowrap}.mk-creator ul{margin:4px 0;padding-left:1.4em}.mk-creator .mk-tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}.mk-creator .mk-tags span{border:1px solid rgba(128,128,128,.45);border-radius:999px;padding:1px 10px;font-size:.9em}</style>
+<p><b>Mark Tsai（蔡豐全）</b>為深耕創業輔導與數位轉型領域的顧問與講師，長期擔任勞動力發展署創業顧問與多項政府計畫的顧問、業師與評審委員，協助中小企業導入數據分析與 AI 工具、申請政府補助計畫，並具備跨境電商實務與講師培訓的豐富經驗。本工具是其推廣 AI 工具運用於教學與課程情境的作品之一。</p>
+<p>聯絡信箱：<a href="mailto:tsaimark@gmail.com">tsaimark@gmail.com</a></p>
+<h3>專長</h3>
+<div class="mk-tags"><span>銷售數據分析</span><span>AI 工具運用</span><span>政府補助計畫申請</span><span>創業</span><span>跨境電商</span></div>
+<h3>證照</h3>
+<table>
+<thead><tr><th>年度</th><th>證照</th></tr></thead>
+<tbody>
+<tr><td>2013</td><td>青創總會 創業輔導顧問師班</td></tr>
+<tr><td>2014</td><td>青創總會 網路行銷講師培訓班</td></tr>
+<tr><td>2016</td><td>阿里巴巴 P4P 認證講師</td></tr>
+<tr><td>2017</td><td>iCap 訓練規劃與評量職能基準課程</td></tr>
+<tr><td>2023</td><td>iCap 職能導向課程申請認證實作班</td></tr>
+<tr><td>2025</td><td>iPAS AI 應用規劃師－初級</td></tr>
+<tr><td>2025</td><td>新北市社會局 社區數位陪伴員</td></tr>
+</tbody>
+</table>
+<h3>經歷</h3>
+<ul>
+<li>勞動力發展署桃竹苗分署 創業顧問（2017－迄今）</li>
+<li>勞動力發展署（北北基）小型企業人力提升計畫 顧問（2019－迄今）</li>
+<li>勞動力發展署（桃竹苗）小型企業人力提升計畫 顧問（2019－迄今）</li>
+<li>農業部農業科技司「科技農企業雙軸轉型躍升發展」科技計畫 業師（2025－2026）</li>
+<li>勞動力發展署 企業人力資源提升計畫 審查委員（2024）</li>
+<li>勞動力發展署 職前訓練評鑑計畫 委員（2022）</li>
+<li>勞動部桃竹苗分署 桃竹苗區域運籌人力資源整合服務計畫 顧問（2022－2023）</li>
+<li>經濟部中小企業處 SBIR 海選專案 評審委員（2019－2024）</li>
+<li>勞動力發展署 數位學習課程清單審查會議 審查委員（2024－2025）</li>
+<li>輔仁大學創新跨領域學院 課務委員（2024－2025）</li>
+<li>台北市進出口商業同業公會 跨境電商生態村 顧問</li>
+<li>台灣網商協會 顧問</li>
+<li>中華職能開發策進會 顧問（2018－2020）</li>
+<li>新北市汽車美容人員職業工會 顧問（2023－迄今）</li>
+<li>中華網路行銷講師協會 顧問（2022－迄今）</li>
+<li>新北市社企電商基地 輔導顧問（2018－2020）</li>
+<li>阿里巴巴國際站平台 認證講師（2016）</li>
+<li>巨匠電腦 跨境電子商務班 講師（2016－2017）</li>
+</ul>
+</div>
+</section>
+<p style="text-align:center"><a href="index.html">← 回到產生器</a></p>
+</main>
+</body>
+</html>
