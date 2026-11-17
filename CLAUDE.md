@@ -2,7 +2,7 @@
 
 給辦訓單位、講師、社區大學、協會用：填課程資訊 → 自動排出 A4 列印海報與 IG／FB／LINE 社群圖（6 尺寸 × 6 版型 × 6 配色＋自訂色 × 3 字型），報名網址自動變 QR code → 下載 PNG、全部尺寸 ZIP（含貼文文案 .txt）、列印 A4、A6 傳單（一張 A4 印 4 份）、複製貼文文案、分享連結 `#p=`。
 
-2026-11-17 建立。使用者從「新軟體方向」清單挑了這個，規格由 Claude 自行決定；中途要求「加上標準五件套」（沒說六件套 → **不加登入序號**）。**尚未上線**：本機驗證完要先問使用者再建 repo／上 Pages（線上網址預計 https://m255525.github.io/course-poster-maker/ ，`app.js` 的 `ONLINE` 已先寫好，只在 file:// 開分享連結時用到）。
+2026-11-17 建立。使用者從「新軟體方向」清單挑了這個，規格由 Claude 自行決定；中途要求「加上標準五件套」（沒說六件套 → **不加登入序號**）。**2026-11-17 已上線** <https://m255525.github.io/course-poster-maker/>（使用者同意後 Claude 執行 `gh repo create`；先 push 再開 Pages，`github-pages` 環境仍只允許 main，已補 master 分支許可並 workflow_dispatch 重跑）。線上版 `CPM_BASE=https://m255525.github.io/course-poster-maker/ python tools/e2e_poster.py` 2026-11-17 全過。已加進 AI 工具導航（`class` 類、辦訓補助情境第二站）、程式牆與 github-dashboard 的 `REPO_META`。上線改版要升 `service-worker.js` 的 `CACHE_NAME`。
 
 ## 檔案
 - `data.js`：純函式引擎（node 可 require）。`SIZES`／`STYLES`／`PALETTES`／`FONTS`、`wrap`（CJK 逐字、英文整字、標點不放行首、左括號不放行尾）、`fitText`／`fitList`（從大字往下試到放得進框，放不下標 `over`）、**`layout(style, size, data)` 只算區塊位置**（`stackLayout` 直式／方形、`wideLayout` 橫式）、`infoRows`／`feeText`／`dateLine`、`suggestTitles`、`postText`、`encodeShare`／`decodeShare`（不含圖片）、`sanitizeAi`、4 個虛構範例。
@@ -29,7 +29,7 @@
 
 ## 和其他專案的關係
 - 「🎓 從訓練證書產生器帶入」：讀同源 `localStorage['tcg.state']`（單位名稱／電話／Logo、課程名稱／起訖日／時數／地點）。**只有上線到同一個 `m255525.github.io` 才讀得到**，本機不同 port 是不同來源、按鈕會藏起來。
-- 本機預覽 port **8890**（`.claude/launch.json` 的 `course-poster-maker`；程式牆 `LOCAL_APPS`）。visitor-badge `m255525.coursepostermaker`。
+- 本機預覽 port **8890**（`.claude/launch.json` 的 `course-poster-maker`）；程式牆已改列 `REPO_META`（線上版）。visitor-badge `m255525.coursepostermaker`。
 
 ## 標準配備
 跑馬燈（工作區公告 GAS，滑鼠移入暫停，不可關）、⚙ 常用設定（收合：顯示、🤖 AI 設定、我的範本、清除全部資料、關於本工具）、首訪警語＋頁面入口、`manual.html#creator`（改 `tools/manual_body.html` 後跑 `python tools/build_manual.py`，創作者區塊取自賞鳥地圖 `tools/manual_tpl.html`）、PWA（`tools/make_icons.py`；上線改版升 `service-worker.js` 的 `CACHE_NAME`）、訪客計數器。無序號、無浮水印（海報是使用者自己的招生素材）。
