@@ -265,7 +265,7 @@ function mkApply(id){
   lsSet('mk', d.id); closeModal(); save(); render(); toast('已帶入課程專案「' + c.title + '」');
 }
 function mkExport(){
-  var c = S.course, course = {title:c.title, start:c.dateStart, end:c.dateEnd, hours:c.hours, place:c.place, url:c.url, org:S.unit.name, teacher:c.spkName};
+  var c = S.course, course = {title:c.title, start:c.dateStart, end:c.dateEnd, hours:c.hours, place:c.place, url:c.url, org:S.unit.name, teacher:c.spkName, outline:c.outline};
   Object.keys(course).forEach(function(k){ if(course[k] === '' || course[k] == null) delete course[k]; });
   if(!course.title){ toast('請先填課程名稱'); return; }
   var doc = MK.store.save(mkId() || null, {course:course}, null);
