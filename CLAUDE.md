@@ -40,5 +40,9 @@
 - 「🎓 從訓練證書產生器帶入」：讀同源 `localStorage['tcg.state']`（單位名稱／電話／Logo、課程名稱／起訖日／時數／地點）。**只有上線到同一個 `m255525.github.io` 才讀得到**，本機不同 port 是不同來源、按鈕會藏起來。
 - 本機預覽 port **8890**（`.claude/launch.json` 的 `course-poster-maker`）；程式牆已改列 `REPO_META`（線上版）。visitor-badge `m255525.coursepostermaker`。
 
+## 課程專案（2026-11-19，`course-link.js` 是 `課程平台/course-link/` 正本的複製檔，別直接改）
+- 「📥 從課程專案帶入」（`mkApply`：只填有值的欄位：課名＋班別、起訖、時數、地點、報名網址、單位、講師）、「📤 存成課程專案」（`mkExport`：只寫 course，不碰 students；沒填課名不建立）。連結存在 `cpm.mk`（`merge` 會丟掉 state 裡不認識的欄位，所以另外存），「新海報」會清掉連結。`#mkFile` 開檔、點擊委派含 `[data-mkin]`。封鎖網站資料時按鈕不出現。跨工具測試 `課程平台/course-link/tools/e2e_link.py`。
+- service-worker activate 改成只刪自己前綴的舊版快取（v3）。
+
 ## 標準配備
 跑馬燈（工作區公告 GAS，滑鼠移入暫停，不可關）、⚙ 常用設定（收合：顯示、🤖 AI 設定、我的範本、清除全部資料、關於本工具）、首訪警語＋頁面入口、`manual.html#creator`（改 `tools/manual_body.html` 後跑 `python tools/build_manual.py`，創作者區塊取自賞鳥地圖 `tools/manual_tpl.html`）、PWA（`tools/make_icons.py`；上線改版升 `service-worker.js` 的 `CACHE_NAME`）、訪客計數器。有登入序號閘門（見上）；無浮水印（海報是使用者自己的招生素材）。

@@ -148,7 +148,7 @@ function renderPanel(){
   var s = sums(), c = S.course;
   var h = card('ex', '例', '範例與我的範本', s.ex,
       '<div class="exs">' + P.EXAMPLES.map(function(e){ return '<button type="button" class="ex" data-ex="' + e.id + '">' + esc(e.n) + '<small>' + esc(e.s) + '</small></button>'; }).join('') + '</div>' +
-      '<div class="stack"><button type="button" class="btn alt sm" data-act="new">🆕 新海報（保留主辦單位）</button>' + (certData() ? '<button type="button" class="btn alt sm" data-act="cert">🎓 從訓練證書產生器帶入</button>' : '') + '<button type="button" class="btn alt sm" data-act="saveTpl">💾 存成我的範本</button></div>' +
+      '<div class="stack"><button type="button" class="btn alt sm" data-act="new">🆕 新海報（保留主辦單位）</button>' + (certData() ? '<button type="button" class="btn alt sm" data-act="cert">🎓 從訓練證書產生器帶入</button>' : '') + (MK ? '<button type="button" class="btn alt sm" data-act="mkPick">📥 從課程專案帶入</button><button type="button" class="btn alt sm" data-act="mkOut">📤 存成課程專案</button>' : '') + '<button type="button" class="btn alt sm" data-act="saveTpl">💾 存成我的範本</button></div>' +
       (TPLS.length ? '<div>' + TPLS.map(function(t, i){ return '<div class="tpl"><b>' + esc(t.name) + '</b><button type="button" class="btn alt sm" data-tpl="' + i + '">套用</button><button type="button" class="btn alt sm" data-deltpl="' + i + '" aria-label="刪除範本 ' + esc(t.name) + '">🗑</button></div>'; }).join('') + '</div>' : '<p class="small">把常用的主辦單位、配色、版型存起來，下次開新課程直接套用（講師照片不會存進範本）。</p>')) +
     card('unit', '1', '主辦單位', s.unit,
       inp('unit.name', '單位名稱', {ph:'例如：臺灣示範職業訓練協會', max:40}) + imgBox('unit.logo', 'Logo') +
@@ -247,6 +247,32 @@ function fromCert(){
   if(c.hours) S.course.hours = String(c.hours); if(c.place) S.course.place = c.place;
   save(); render(); toast('已帶入訓練證書產生器的單位與課程資料');
 }
+/* ---------- 課程專案（course-link.js；沒有也照常運作）：只讀寫課程基本資料，不碰學員名單 ---------- */
+var MK = window.MKCourse && window.MKCourse.store ? window.MKCourse : null;
+function mkId(){ var id = lsGet('mk'); return id && MK && MK.store.get(id) ? id : ''; }
+function mkPickHtml(){
+  var list = MK.store.list(), cur = mkId();
+  return '<h2>📥 從課程專案帶入</h2><p class="small">課程專案是同一台電腦上各辦訓工具共用的課程資料（出席簽到 QR、訓練證書產生器…）。會帶入課程名稱、日期、時數、地點、報名網址、主辦單位、講師；海報只用課程資料，<b>不會讀學員名單</b>。</p>' +
+    (list.length ? '<div class="stack" style="flex-direction:column;align-items:stretch">' + list.map(function(d){ return '<button type="button" class="btn alt" data-mkin="' + esc(d.id) + '">' + esc(MKCourse.label(d)) + ' <small>' + esc(MKCourse.when(d)) + (cur === d.id ? '・目前連結' : '') + '</small></button>'; }).join('') + '</div>' : '<p>這台電腦還沒有課程專案。可以按「📤 存成課程專案」用這張海報的課程建立一個。</p>') +
+    '<div class="stack"><label class="btn alt">📂 開啟課程專案檔（.json）<input type="file" id="mkFile" accept=".json,application/json" hidden></label><button type="button" class="btn alt" data-act="close">取消</button></div>';
+}
+function mkApply(id){
+  var d = MK.store.get(id); if(!d){ toast('找不到這個課程專案'); return; }
+  var c = d.course;
+  if(c.title) S.course.title = c.title + (c.term ? ' ' + c.term : ''); if(c.start) S.course.dateStart = c.start; if(c.end) S.course.dateEnd = c.end;
+  if(c.hours !== '') S.course.hours = String(c.hours); if(c.place) S.course.place = c.place; if(c.url) S.course.url = c.url;
+  if(c.org) S.unit.name = c.org; if(c.teacher) S.course.spkName = c.teacher;
+  lsSet('mk', d.id); closeModal(); save(); render(); toast('已帶入課程專案「' + c.title + '」');
+}
+function mkExport(){
+  var c = S.course, course = {title:c.title, start:c.dateStart, end:c.dateEnd, hours:c.hours, place:c.place, url:c.url, org:S.unit.name, teacher:c.spkName};
+  Object.keys(course).forEach(function(k){ if(course[k] === '' || course[k] == null) delete course[k]; });
+  if(!course.title){ toast('請先填課程名稱'); return; }
+  var doc = MK.store.save(mkId() || null, {course:course}, null);
+  if(!doc){ toast('存不進這台電腦（瀏覽器空間不足或封鎖網站資料）'); return; }
+  lsSet('mk', doc.id);
+  openModal('<h2>📤 已存成課程專案</h2><p>「' + esc(MKCourse.label(doc)) + '」</p><p class="small">出席簽到 QR、訓練證書產生器按「📥 從課程專案帶入」就能用同一份課程資料；招生成效追蹤也能接著用。名單之後在出席簽到 QR 匯入即可。再按一次會更新同一個課程專案。</p><div class="stack"><button type="button" class="btn" data-act="close">好</button></div>');
+}
 function preparePrint(mode){
   var pa = $('printArea'); pa.innerHTML = '';
   var src = fullCanvas('a4').toDataURL('image/png');
@@ -330,8 +356,9 @@ var ACT = {
   close:closeModal, warn:showWarn, settings:openSettings, install:install,
   logout:function(){ closeModal(); gateLogout(); },
   foldall:function(){ var ds = document.querySelectorAll('.set-sec'), any = Array.prototype.some.call(ds, function(d){ return !d.open; }); ds.forEach(function(d){ d.open = any; }); saveFold(); },
-  'new':function(){ var st = P.blank(); st.look = S.look; st.size = S.size; apply(st, true); toast('已開新海報，主辦單位與版型保留'); },
+  'new':function(){ lsDel('mk'); var st = P.blank(); st.look = S.look; st.size = S.size; apply(st, true); toast('已開新海報，主辦單位與版型保留'); },
   cert:fromCert,
+  mkPick:function(){ openModal(mkPickHtml()); }, mkOut:mkExport,
   saveTpl:function(){ openModal('<h2>💾 存成我的範本</h2><label class="fld">範本名稱<input id="tplName" maxlength="30" value="' + esc(S.unit.name || S.course.title || '我的範本') + '"></label><p class="small">會存主辦單位、Logo、課程內容、配色版型；講師照片不存。最多 20 個。</p><div class="stack"><button type="button" class="btn" data-act="tplOk">存檔</button><button type="button" class="btn alt" data-act="close">取消</button></div>'); setTimeout(function(){ var e = $('tplName'); if(e){ e.focus(); e.select(); } }, 30); },
   tplOk:function(){ var n = P.cut(($('tplName') || {}).value || '', 30).trim() || '我的範本'; var t = P.clone(S); t.course.spkPhoto = ''; TPLS = TPLS.filter(function(x){ return x.name !== n; }); TPLS.unshift({name:n, st:t}); TPLS = TPLS.slice(0, 20); if(!lsSet('tpls', JSON.stringify(TPLS))){ TPLS.shift(); toast('瀏覽器空間不足，存不下（Logo 圖太大？）'); } else toast('已存成範本「' + n + '」'); closeModal(); renderPanel(); },
   wipeTpl:function(){ TPLS = []; lsDel('tpls'); toast('已刪除全部範本'); closeModal(); renderPanel(); },
@@ -353,11 +380,12 @@ var ACT = {
 };
 
 document.addEventListener('click', function(e){
-  var t = e.target.closest('[data-act],[data-ex],[data-tpl],[data-deltpl],[data-size],[data-style],[data-pal],[data-pt],[data-title],[data-delimg],[data-aiapply],[data-fontsize]');
+  var t = e.target.closest('[data-act],[data-ex],[data-tpl],[data-deltpl],[data-size],[data-style],[data-pal],[data-pt],[data-title],[data-delimg],[data-aiapply],[data-fontsize],[data-mkin]');
   if(!t) return;
   if(t.tagName === 'A' && t.getAttribute('href') === '#') e.preventDefault();
   var d = t.dataset;
   if(d.act && ACT[d.act]){ e.preventDefault(); ACT[d.act](); return; }
+  if(d.mkin){ mkApply(d.mkin); return; }
   if(d.ex){ loadExample(d.ex); return; }
   if(d.tpl){ var tp = TPLS[+d.tpl]; if(tp){ var st = P.clone(tp.st); st.course.spkPhoto = ''; apply(st); toast('已套用範本「' + tp.name + '」'); } return; }
   if(d.deltpl){ TPLS.splice(+d.deltpl, 1); lsSet('tpls', JSON.stringify(TPLS)); renderPanel(); return; }
@@ -378,6 +406,7 @@ document.addEventListener('input', function(e){
 });
 document.addEventListener('change', function(e){
   var t = e.target;
+  if(t.id === 'mkFile' && t.files[0]){ var mf = new FileReader(); mf.onload = function(){ t.value = ''; var r = MKCourse.fromText(mf.result); if(r.error){ toast(r.error); return; } var last = null; r.docs.forEach(function(x){ last = MK.store.put(x) || last; }); if(!last){ toast('存不進這台電腦（瀏覽器空間不足或封鎖網站資料）'); return; } if(r.docs.length === 1) mkApply(last.id); else openModal(mkPickHtml()); }; mf.readAsText(t.files[0]); return; }
   if(t.hasAttribute('data-font')){ S.look.font = t.value; save(); redraw(); return; }
   if(t.dataset.img && t.files && t.files[0]){
     var logo = t.dataset.img === 'unit.logo';
